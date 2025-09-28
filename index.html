@@ -32,21 +32,31 @@
     }
 
     /* Payslip templates */
-    .payslip { width: 100%; max-width: 520px; margin: auto; border: 2.5px solid #3949ab; border-radius: 14px; background: #fafbff; padding: 2.2rem 2rem 1.7rem 2rem; color: #222; box-shadow:0 3px 18px #e8ebf4;}
+    .payslip { 
+      width: 100%; 
+      max-width: 520px; 
+      margin: auto; 
+      border: none !important;
+      border-radius: 14px; 
+      background: #fafbff; 
+      padding: 2.2rem 2rem 1.7rem 2rem; 
+      color: #222; 
+      box-shadow: none !important;
+    }
     .payslip header { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem;}
     .payslip .company-logo { max-height: 60px; border-radius: 7px; margin-left: 1rem;}
     .payslip .company-addr { font-size: 0.97em; color: #555; margin-bottom: 0.4em;}
     .payslip table { width: 100%; border-collapse: collapse; margin: 0.4em 0;}
-    .payslip th, .payslip td { padding: 0.36rem 0.2rem; text-align: left; }
+    .payslip th, .payslip td { padding: 0.36rem 0.2rem; text-align: left; border: none !important; }
     .payslip th { background: #e3e6f3; }
     .payslip .summary { font-weight: 600; background: #f4f7fb;}
     .payslip hr { border: none; border-top: 1.5px solid #e3e6f3; margin: 1em 0; }
-    .payslip .label { font-weight: 500;}
+    .payslip .label { font-weight: 500; }
     /* Template 2: Modern Teal */
-    .template-2 { border-color: #009688; background: #f5fffc;}
+    .template-2 { background: #f5fffc; }
     .template-2 th { background: #d7f7f3;}
     /* Template 3: Classic Blue Right Logo */
-    .template-3 { border-color: #3949ab; background: #fff;}
+    .template-3 { background: #fff; }
     .template-3 header { justify-content: flex-end; background: none; }
     .template-3 .company-logo { margin-left: 1rem; margin-right: 0; max-height: 52px; }
     .template-3 .company-title { margin-right: auto; font-size: 1.18rem; font-weight: 700; color: #3949ab;}
@@ -85,6 +95,10 @@
           <label>LOP Days</label>
           <input type="number" min="0" id="lopDays" required value="0">
         </div>
+      </div>
+      <div class="form-group">
+        <label>Bank Account Number</label>
+        <input type="text" id="bankAccount" required>
       </div>
       <div class="form-group">
         <label>Company Name</label>
@@ -222,6 +236,10 @@
             <th style="background:#f3f4f8;font-size:1em;">LOP Days</th>
             <td style="background:#f9fafd;font-size:1em;">${data.lopDays}</td>
           </tr>
+          <tr>
+            <th style="background:#f3f4f8;font-size:1em;">Bank Account Number</th>
+            <td style="background:#f9fafd;font-size:1em;">${data.bankAccount}</td>
+          </tr>
         </table>
       `;
     }else{
@@ -232,6 +250,7 @@
           <tr><th>Designation</th><td>${data.designation||""}</td></tr>
           <tr><th>Payslip Month</th><td>${data.payslipMonth}</td></tr>
           <tr><th>LOP Days</th><td>${data.lopDays}</td></tr>
+          <tr><th>Bank Account Number</th><td>${data.bankAccount}</td></tr>
         </table>
       `;
     }
@@ -292,6 +311,7 @@
       designation: form.designation.value,
       payslipMonth: form.payslipMonth.value,
       lopDays: form.lopDays.value,
+      bankAccount: form.bankAccount.value,
       companyName: form.companyName.value,
       companyAddress: form.companyAddress.value,
       logo: logo,
@@ -304,9 +324,10 @@
     document.getElementById("downloadPDFBtn").disabled = false;
     document.getElementById("downloadImgBtn").disabled = false;
   });
+  // Improved PDF/Image Export: html2canvas scale = 2 for higher res
   document.getElementById("downloadPDFBtn").addEventListener("click", function() {
     const slip = document.getElementById("slipToExport");
-    html2canvas(slip).then(canvas => {
+    html2canvas(slip, {scale: 2}).then(canvas => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new window.jspdf.jsPDF({orientation: "portrait", unit: "pt", format: "a4"});
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -320,7 +341,7 @@
   });
   document.getElementById("downloadImgBtn").addEventListener("click", function() {
     const slip = document.getElementById("slipToExport");
-    html2canvas(slip).then(canvas => {
+    html2canvas(slip, {scale: 2}).then(canvas => {
       const link = document.createElement("a");
       link.download = "payslip.png";
       link.href = canvas.toDataURL("image/png");
