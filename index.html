@@ -33,9 +33,7 @@
 
     /* Payslip templates */
     .payslip-container {
-      transform: scale(0.75);
-      transform-origin: top left;
-      width: 700px; /* base width for scaling, adjust as needed */
+      width: 700px;
     }
     .payslip { 
       width: 700px; 
@@ -47,27 +45,36 @@
       padding: 2.2rem 2rem 1.7rem 2rem; 
       color: #222; 
       box-shadow: none !important;
+      font-size: 1.08rem;
     }
-    .payslip header { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem;}
+    .payslip header { font-size: 1.3rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem;}
     .payslip .company-logo { max-height: 60px; border-radius: 7px; margin-left: 1rem;}
     .payslip .company-addr { font-size: 0.97em; color: #555; margin-bottom: 0.4em;}
     .payslip table { width: 100%; border-collapse: collapse; margin: 0.4em 0;}
-    .payslip th, .payslip td { padding: 0.36rem 0.2rem; text-align: left; border: none !important; }
-    .payslip th { background: #e3e6f3; }
+    /* Reduce the grey area for all templates - lighter and less padding */
+    .payslip th { background: #f6f7fa !important; color: #333; font-weight: 500; padding: 0.22rem 0.2rem;}
+    .payslip td { background: #fff !important; }
     .payslip .summary { font-weight: 600; background: #f4f7fb;}
     .payslip hr { border: none; border-top: 1.5px solid #e3e6f3; margin: 1em 0; }
     .payslip .label { font-weight: 500; }
     /* Template 2: Modern Teal */
     .template-2 { background: #f5fffc; }
-    .template-2 th { background: #d7f7f3;}
+    .template-2 th { background: #f6faf8 !important;}
     /* Template 3: Classic Blue Right Logo */
     .template-3 { background: #fff; }
     .template-3 header { justify-content: flex-end; background: none; }
     .template-3 .company-logo { margin-left: 1rem; margin-right: 0; max-height: 52px; }
     .template-3 .company-title { margin-right: auto; font-size: 1.18rem; font-weight: 700; color: #3949ab;}
-    .template-3 th { background: #f3f4f8; }
-    .template-3 .emp-table th { background: #f3f4f8; width: 43%; font-size: 1em; }
-    .template-3 .emp-table td { background: #f9fafd; font-size: 1em; }
+    .template-3 th { background: #f6f7fa !important; }
+    .template-3 .emp-table th { background: #f6f7fa !important; width: 43%; font-size: 1em; }
+    .template-3 .emp-table td { background: #fff !important; font-size: 1em; }
+
+    /* Exporting class for font size reduction */
+    .exporting {
+      font-size: 0.65em !important;
+    }
+    .exporting header { font-size: 1em !important; }
+    .exporting th, .exporting td { font-size: 1em !important; }
   </style>
 </head>
 <body>
@@ -221,28 +228,28 @@
       empTable = `
         <table class="emp-table">
           <tr>
-            <th style="width:43%;background:#f3f4f8;font-size:1em;">Employee Name</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.empName}</td>
+            <th>Employee Name</th>
+            <td>${data.empName}</td>
           </tr>
           <tr>
-            <th style="background:#f3f4f8;font-size:1em;">Employee ID</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.empId}</td>
+            <th>Employee ID</th>
+            <td>${data.empId}</td>
           </tr>
           <tr>
-            <th style="background:#f3f4f8;font-size:1em;">Designation</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.designation||""}</td>
+            <th>Designation</th>
+            <td>${data.designation||""}</td>
           </tr>
           <tr>
-            <th style="background:#f3f4f8;font-size:1em;">Payslip Month</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.payslipMonth}</td>
+            <th>Payslip Month</th>
+            <td>${data.payslipMonth}</td>
           </tr>
           <tr>
-            <th style="background:#f3f4f8;font-size:1em;">LOP Days</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.lopDays}</td>
+            <th>LOP Days</th>
+            <td>${data.lopDays}</td>
           </tr>
           <tr>
-            <th style="background:#f3f4f8;font-size:1em;">Bank Account Number</th>
-            <td style="background:#f9fafd;font-size:1em;">${data.bankAccount}</td>
+            <th>Bank Account Number</th>
+            <td>${data.bankAccount}</td>
           </tr>
         </table>
       `;
@@ -277,8 +284,6 @@
         <tr class="summary"><td>Total Deductions</td><td>${inr(deductionsTotal)}</td></tr>
       </table>
     `;
-
-    // For template 3: logo right, no bg, company name left
     let logoHtml = data.logo ? `<img src="${data.logo}" class="company-logo" alt="Company Logo">` : "";
     let headerHtml;
     if(template==3){
@@ -331,33 +336,49 @@
     document.getElementById("downloadImgBtn").disabled = false;
   });
 
-  // Export logic: snapshot the scaled payslip at native scale (so the output is 75% of previous size)
   function getPayslipExportNode() {
-    // We want to snapshot the .payslip, not the scaled container, to get the correct size
     return document.getElementById("slipToExport");
   }
+
+  function addExportingClass() {
+    let slip = getPayslipExportNode();
+    if (slip) slip.classList.add('exporting');
+  }
+  function removeExportingClass() {
+    let slip = getPayslipExportNode();
+    if (slip) slip.classList.remove('exporting');
+  }
+
   document.getElementById("downloadPDFBtn").addEventListener("click", function() {
     const slip = getPayslipExportNode();
-    html2canvas(slip, {scale: 1.5}).then(canvas => {
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new window.jspdf.jsPDF({orientation: "portrait", unit: "pt", format: "a4"});
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const ratio = Math.min(pageWidth / canvas.width, (pageHeight-40)/ canvas.height);
-      const imgWidth = canvas.width * ratio;
-      const imgHeight = canvas.height * ratio;
-      pdf.addImage(imgData, "PNG", (pageWidth - imgWidth)/2, 20, imgWidth, imgHeight);
-      pdf.save("payslip.pdf");
-    });
+    addExportingClass();
+    setTimeout(() => {
+      html2canvas(slip, {scale: 1.5}).then(canvas => {
+        removeExportingClass();
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new window.jspdf.jsPDF({orientation: "portrait", unit: "pt", format: "a4"});
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const ratio = Math.min(pageWidth / canvas.width, (pageHeight-40)/ canvas.height);
+        const imgWidth = canvas.width * ratio;
+        const imgHeight = canvas.height * ratio;
+        pdf.addImage(imgData, "PNG", (pageWidth - imgWidth)/2, 20, imgWidth, imgHeight);
+        pdf.save("payslip.pdf");
+      });
+    }, 200);
   });
   document.getElementById("downloadImgBtn").addEventListener("click", function() {
     const slip = getPayslipExportNode();
-    html2canvas(slip, {scale: 1.5}).then(canvas => {
-      const link = document.createElement("a");
-      link.download = "payslip.png";
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
+    addExportingClass();
+    setTimeout(() => {
+      html2canvas(slip, {scale: 1.5}).then(canvas => {
+        removeExportingClass();
+        const link = document.createElement("a");
+        link.download = "payslip.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }, 200);
   });
   window.onload = function() {
     addRow('earnings');
