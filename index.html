@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payslip Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; padding: 0; background: #f5f7fa; }
+    header { background: linear-gradient(90deg,#3949ab,#1976d2); color: #fff; padding: 1.5rem 2rem; text-align: center; box-shadow: 0 2px 8px #ddd; }
+    main { max-width: 880px; margin: 2rem auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px #dde2ee; padding: 2.3rem 2%; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; margin-bottom: 0.3rem; font-weight: 500; }
+    input, select { width: 100%; padding: 0.5rem; border: 1px solid #bdbdbd; border-radius: 5px; background: #f6fafd; }
+    .row { display: flex; gap: 1.5rem; }
+    .row > .form-group { flex: 1; }
+    .preview-section { margin-top: 2.7rem; }
+    .template-selector { margin-bottom: 1.2rem; }
+    .btn { background: #3949ab; color: #fff; border: none; padding: 0.7rem 1.7rem; border-radius: 5px; cursor: pointer; margin-right: 1rem; font-size: 1rem;}
+    .btn:disabled { opacity: 0.6; cursor: default; }
+    .logo-preview { max-height: 70px; margin: 0.5rem 0; border-radius: 7px; }
+    .add-row-btn { background: #009688; color: #fff; border: none; border-radius: 4px; padding: 0.3rem 0.7rem; font-size: 1.1em; margin-left: 0.6rem; cursor:pointer;}
+    .remove-row-btn { background: #e91e63; color: #fff; border: none; border-radius: 4px; padding: 0.1rem 0.5rem; margin-left: 0.5rem; cursor:pointer; font-size:1.1em;}
+    .table-section { margin-top: 0.7rem; margin-bottom: 1.5rem;}
+    .table-section label { margin-bottom: 0.2rem;}
+    .custom-table { width: 100%; border-spacing: 0; margin-bottom: 0.2rem;}
+    .custom-table th, .custom-table td { padding: 0.3rem 0.5rem; border-bottom: 1px solid #e3e6f3; }
+    .custom-table th { background: #f4f7fb; }
+    .custom-table input { width: 100%; }
+    @media (max-width: 700px) {
+      .row { flex-direction: column; }
+      main { padding: 1.1rem 2%; }
+    }
+    /* Payslip templates */
+    .payslip { width: 100%; max-width: 520px; margin: auto; border: 2.5px solid #3949ab; border-radius: 14px; background: #fafbff; padding: 2.2rem 2rem 1.7rem 2rem; color: #222; box-shadow:0 3px 18px #e8ebf4;}
+    .payslip header { font-size: 1.4rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;}
+    .payslip .header-left { display: flex; align-items: center; gap: 1rem; }
+    .payslip .company-logo { max-height: 60px; border-radius: 7px; margin-right:1rem;}
+    .payslip .company-addr { font-size: 0.97em; color: #555; margin-bottom: 0.4em;}
+    .payslip table { width: 100%; border-collapse: collapse; margin: 0.4em 0;}
+    .payslip th, .payslip td { padding: 0.36rem 0.2rem; text-align: left; }
+    .payslip th { background: #e3e6f3; }
+    .payslip .summary { font-weight: 600; background: #f4f7fb;}
+    .payslip hr { border: none; border-top: 1.5px solid #e3e6f3; margin: 1em 0; }
+    .payslip .label { font-weight: 500;}
+    /* Template 2: Modern Teal */
+    .template-2 { border-color: #009688; background: #f5fffc;}
+    .template-2 th { background: #d7f7f3;}
+    /* Template 3: Classic Blue Left Logo */
+    .template-3 { border-color: #3949ab; background: #fafbff;}
+    .template-3 header { justify-content: flex-start; }
+    .template-3 .header-left { flex-direction: row; }
+    .template-3 .company-logo { margin-right: 1.3rem; margin-left:0; }
+    .template-3 th { background: #e3e6f3; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Payslip Generator</h1>
+    <p>Generate, preview, and download payslips in INR with custom items and beautiful templates.</p>
+  </header>
+  <main>
+    <form id="payslipForm" autocomplete="off">
+      <div class="row">
+        <div class="form-group">
+          <label>Employee Name</label>
+          <input type="text" id="empName" required>
+        </div>
+        <div class="form-group">
+          <label>Employee ID</label>
+          <input type="text" id="empId" required>
+        </div>
+      </div>
+      <div class="row">
+        <div class="form-group">
+          <label>Designation</label>
+          <input type="text" id="designation">
+        </div>
+        <div class="form-group">
+          <label>Payslip Month</label>
+          <input type="month" id="payslipMonth" required>
+        </div>
+        <div class="form-group">
+          <label>LOP Days</label>
+          <input type="number" min="0" id="lopDays" required value="0">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Company Name</label>
+        <input type="text" id="companyName" required>
+      </div>
+      <div class="form-group">
+        <label>Company Address</label>
+        <input type="text" id="companyAddress">
+      </div>
+      <div class="form-group">
+        <label>Company Logo (optional)</label>
+        <input type="file" id="companyLogo" accept="image/*">
+        <img id="logoPreview" class="logo-preview" style="display:none;">
+      </div>
+      <div class="row">
+        <div class="form-group table-section">
+          <label>Earnings&nbsp;
+            <button type="button" class="add-row-btn" onclick="addRow('earnings')">+ Add</button>
+          </label>
+          <table class="custom-table" id="earningsTable">
+            <thead><tr><th>Description</th><th>Amount (INR)</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="form-group table-section">
+          <label>Deductions&nbsp;
+            <button type="button" class="add-row-btn" onclick="addRow('deductions')">+ Add</button>
+          </label>
+          <table class="custom-table" id="deductionsTable">
+            <thead><tr><th>Description</th><th>Amount (INR)</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="form-group template-selector">
+        <label>Template</label>
+        <select id="template">
+          <option value="1">Classic Blue</option>
+          <option value="2">Modern Teal</option>
+          <option value="3">Classic Blue Left Logo</option>
+        </select>
+      </div>
+      <button type="button" class="btn" id="previewBtn">Preview</button>
+      <button type="button" class="btn" id="downloadPDFBtn" disabled>Download PDF</button>
+      <button type="button" class="btn" id="downloadImgBtn" disabled>Download Image</button>
+    </form>
+
+    <section class="preview-section" id="previewSection" style="display:none;">
+      <h2>Payslip Preview</h2>
+      <div id="payslipPreview"></div>
+    </section>
+  </main>
+<!-- jsPDF and html2canvas from CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+  function inr(v) {
+    if (!v || isNaN(v)) return "₹0";
+    return "₹" + (+v).toLocaleString('en-IN', {maximumFractionDigits:2});
+  }
+  function addRow(type, desc='', amt='') {
+    const tableId = type === 'earnings' ? 'earningsTable' : 'deductionsTable';
+    const tbody = document.getElementById(tableId).querySelector('tbody');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="desc" value="${desc}" required placeholder="Description"></td>
+      <td><input type="number" class="amt" value="${amt}" min="0" required placeholder="Amount"></td>
+      <td><button type="button" class="remove-row-btn" title="Remove" onclick="removeRow(this)">&times;</button></td>
+    `;
+    tbody.appendChild(tr);
+    updateNetPay();
+  }
+  function removeRow(btn) {
+    btn.closest('tr').remove();
+    updateNetPay();
+  }
+  document.getElementById("companyLogo").addEventListener("change", function(e) {
+    const file = e.target.files[0];
+    const logoPreview = document.getElementById("logoPreview");
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        logoPreview.src = e.target.result;
+        logoPreview.style.display = "block";
+        logoPreview.dataset.logo = e.target.result;
+      }
+      reader.readAsDataURL(file);
+    } else {
+      logoPreview.src = "";
+      logoPreview.style.display = "none";
+      logoPreview.dataset.logo = "";
+    }
+  });
+  function collectRows(type) {
+    const tableId = type === 'earnings' ? 'earningsTable' : 'deductionsTable';
+    const rows = [];
+    document.querySelectorAll(`#${tableId} tbody tr`).forEach(tr => {
+      const desc = tr.querySelector('.desc').value.trim();
+      const amt = parseFloat(tr.querySelector('.amt').value) || 0;
+      if (desc) rows.push({desc, amt});
+    });
+    return rows;
+  }
+  function sumRows(rows) {
+    return rows.reduce((sum, r) => sum + (parseFloat(r.amt)||0), 0);
+  }
+  function updateNetPay() {
+    const earnings = collectRows('earnings');
+    const deductions = collectRows('deductions');
+    const net = sumRows(earnings) - sumRows(deductions);
+  }
+  function payslipHTML(data, template=1) {
+    let templateClass = "template-" + template;
+    let empTable = `
+      <table>
+        <tr><th>Employee Name</th><td>${data.empName}</td></tr>
+        <tr><th>Employee ID</th><td>${data.empId}</td></tr>
+        <tr><th>Designation</th><td>${data.designation||""}</td></tr>
+        <tr><th>Payslip Month</th><td>${data.payslipMonth}</td></tr>
+        <tr><th>LOP Days</th><td>${data.lopDays}</td></tr>
+      </table>
+    `;
+    let earningsRows = data.earnings.map(r=>`<tr><td class="label">${r.desc}</td><td>${inr(r.amt)}</td></tr>`).join('');
+    let deductionsRows = data.deductions.map(r=>`<tr><td class="label">${r.desc}</td><td>${inr(r.amt)}</td></tr>`).join('');
+    let earningsTotal = sumRows(data.earnings);
+    let deductionsTotal = sumRows(data.deductions);
+    let netpay = earningsTotal - deductionsTotal;
+    let earningsTable = `
+      <table>
+        <tr><th>Earnings</th><th>Amount (INR)</th></tr>
+        ${earningsRows}
+        <tr class="summary"><td>Total Earnings</td><td>${inr(earningsTotal)}</td></tr>
+      </table>
+    `;
+    let deductionsTable = `
+      <table>
+        <tr><th>Deductions</th><th>Amount (INR)</th></tr>
+        ${deductionsRows}
+        <tr class="summary"><td>Total Deductions</td><td>${inr(deductionsTotal)}</td></tr>
+      </table>
+    `;
+    // Header: logo left, company name right
+    let logoHtml = data.logo ? `<img src="${data.logo}" class="company-logo" alt="Company Logo">` : "";
+    let headerHtml = template==3 ? `<div class="header-left">${logoHtml}<span>${data.companyName}</span></div>` : `<div class="header-left">${logoHtml}<span>${data.companyName}</span></div>`;
+    return `
+    <div class="payslip ${templateClass}" id="slipToExport">
+      <header>
+        ${headerHtml}
+      </header>
+      <div class="company-addr">${data.companyAddress||""}</div>
+      <hr>
+      ${empTable}
+      <hr>
+      <div class="row" style="gap:2.2em;">
+        <div style="flex:1">${earningsTable}</div>
+        <div style="flex:1">${deductionsTable}</div>
+      </div>
+      <hr>
+      <table>
+        <tr class="summary"><th>Net Pay</th><th>${inr(netpay)}</th></tr>
+      </table>
+    </div>
+    `;
+  }
+  document.getElementById("previewBtn").addEventListener("click", function() {
+    const form = document.getElementById("payslipForm");
+    const logo = document.getElementById("logoPreview").dataset.logo || "";
+    const data = {
+      empName: form.empName.value,
+      empId: form.empId.value,
+      designation: form.designation.value,
+      payslipMonth: form.payslipMonth.value,
+      lopDays: form.lopDays.value,
+      companyName: form.companyName.value,
+      companyAddress: form.companyAddress.value,
+      logo: logo,
+      earnings: collectRows('earnings'),
+      deductions: collectRows('deductions'),
+    };
+    const template = form.template.value;
+    document.getElementById("payslipPreview").innerHTML = payslipHTML(data, template);
+    document.getElementById("previewSection").style.display = "block";
+    document.getElementById("downloadPDFBtn").disabled = false;
+    document.getElementById("downloadImgBtn").disabled = false;
+  });
+  document.getElementById("downloadPDFBtn").addEventListener("click", function() {
+    const slip = document.getElementById("slipToExport");
+    html2canvas(slip).then(canvas => {
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new window.jspdf.jsPDF({orientation: "portrait", unit: "pt", format: "a4"});
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const ratio = Math.min(pageWidth / canvas.width, (pageHeight-40)/ canvas.height);
+      const imgWidth = canvas.width * ratio;
+      const imgHeight = canvas.height * ratio;
+      pdf.addImage(imgData, "PNG", (pageWidth - imgWidth)/2, 20, imgWidth, imgHeight);
+      pdf.save("payslip.pdf");
+    });
+  });
+  document.getElementById("downloadImgBtn").addEventListener("click", function() {
+    const slip = document.getElementById("slipToExport");
+    html2canvas(slip).then(canvas => {
+      const link = document.createElement("a");
+      link.download = "payslip.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  });
+  window.onload = function() {
+    addRow('earnings');
+    addRow('deductions');
+  };
+</script>
+</body>
+</html>
