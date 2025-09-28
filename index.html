@@ -32,9 +32,14 @@
     }
 
     /* Payslip templates */
+    .payslip-container {
+      transform: scale(0.75);
+      transform-origin: top left;
+      width: 700px; /* base width for scaling, adjust as needed */
+    }
     .payslip { 
-      width: 100%; 
-      max-width: 520px; 
+      width: 700px; 
+      max-width: 700px; 
       margin: auto; 
       border: none !important;
       border-radius: 14px; 
@@ -151,7 +156,6 @@
       <div id="payslipPreview"></div>
     </section>
   </main>
-<!-- jsPDF and html2canvas from CDN -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
@@ -283,22 +287,24 @@
       headerHtml = `${logoHtml}<span>${data.companyName}</span>`;
     }
     return `
-    <div class="payslip ${templateClass}" id="slipToExport">
-      <header>
-        ${headerHtml}
-      </header>
-      <div class="company-addr">${data.companyAddress||""}</div>
-      <hr>
-      ${empTable}
-      <hr>
-      <div class="row" style="gap:2.2em;">
-        <div style="flex:1">${earningsTable}</div>
-        <div style="flex:1">${deductionsTable}</div>
+    <div class="payslip-container">
+      <div class="payslip ${templateClass}" id="slipToExport">
+        <header>
+          ${headerHtml}
+        </header>
+        <div class="company-addr">${data.companyAddress||""}</div>
+        <hr>
+        ${empTable}
+        <hr>
+        <div class="row" style="gap:2.2em;">
+          <div style="flex:1">${earningsTable}</div>
+          <div style="flex:1">${deductionsTable}</div>
+        </div>
+        <hr>
+        <table>
+          <tr class="summary"><th>Net Pay</th><th>${inr(netpay)}</th></tr>
+        </table>
       </div>
-      <hr>
-      <table>
-        <tr class="summary"><th>Net Pay</th><th>${inr(netpay)}</th></tr>
-      </table>
     </div>
     `;
   }
@@ -324,10 +330,15 @@
     document.getElementById("downloadPDFBtn").disabled = false;
     document.getElementById("downloadImgBtn").disabled = false;
   });
-  // Improved PDF/Image Export: html2canvas scale = 2 for higher res
+
+  // Export logic: snapshot the scaled payslip at native scale (so the output is 75% of previous size)
+  function getPayslipExportNode() {
+    // We want to snapshot the .payslip, not the scaled container, to get the correct size
+    return document.getElementById("slipToExport");
+  }
   document.getElementById("downloadPDFBtn").addEventListener("click", function() {
-    const slip = document.getElementById("slipToExport");
-    html2canvas(slip, {scale: 2}).then(canvas => {
+    const slip = getPayslipExportNode();
+    html2canvas(slip, {scale: 1.5}).then(canvas => {
       const imgData = canvas.toDataURL("image/png");
       const pdf = new window.jspdf.jsPDF({orientation: "portrait", unit: "pt", format: "a4"});
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -340,8 +351,8 @@
     });
   });
   document.getElementById("downloadImgBtn").addEventListener("click", function() {
-    const slip = document.getElementById("slipToExport");
-    html2canvas(slip, {scale: 2}).then(canvas => {
+    const slip = getPayslipExportNode();
+    html2canvas(slip, {scale: 1.5}).then(canvas => {
       const link = document.createElement("a");
       link.download = "payslip.png";
       link.href = canvas.toDataURL("image/png");
